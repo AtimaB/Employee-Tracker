@@ -13,23 +13,124 @@ let connection = mysql.createConnection({
 
 connection.connect(function (err) {
   if (err) throw err;
-  startTracker();
+  startTracking();
 });
 
-function startTracker() {
+function startTracking() {
   console.log(`............................`);
   console.log(`Welcome to Employee Tracker.`);
   console.log(`............................`);
-  inquirer.prompt({
-    name: 'action',
-    type: 'list',
-    message: 'What would you like to do?',
-    choices: [
-      'Add Employee.',
-      'Remove Emlpoyee.',
-      'Update Employee Role.',
-      'Update Employee Manager.',
-      'Exit!',
-    ],
+  inquirer
+    .prompt({
+      name: 'action',
+      type: 'list',
+      message: 'What would you like to do?',
+      choices: [
+        'View All Employee',
+        'View All Employee By Department',
+        'View All Employee By Role',
+        'Add Employee',
+        'Remove Emlpoyee',
+        'Update Employee Role',
+        'Update Employee Manager',
+        'Exit!',
+      ],
+    })
+    .then(function (answer) {
+      switch (answer.action) {
+        case 'View All Employee':
+          viewEmployee();
+          break;
+
+        case 'View All Employee By Department':
+          viewByDepartment();
+          break;
+
+        case 'View All Employee By Role':
+          viewByRole();
+          break;
+
+        case 'Add Employee':
+          addEmployee();
+          break;
+
+        case 'Remove Emlpoyee':
+          removeEmployee();
+          break;
+
+        case 'Update Employee Role':
+          updateEmployeeRole();
+          break;
+
+        case 'Update Employee Manager':
+          updateEmployeeManager();
+          break;
+
+        case 'Exit!':
+          connection.end();
+          break;
+      }
+    });
+}
+
+function viewEmployee() {
+  let query = 'SELECT * FROM employee_trackerDB.employee';
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++)
+      console.log(res.length + ' employee found.');
+    console.table('All Employee', res);
+    startTracking();
   });
+}
+
+function viewByDepartment() {
+  let query = 'SELECT * FROM employee_trackerDB.department';
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++)
+      console.log(res.length + ' department found.');
+    console.table('All Department', res);
+    startTracking();
+  });
+}
+
+function viewByRole() {
+  let query = 'SELECT * FROM employee_trackerDB.roles';
+  connection.query(query, function (err, res) {
+    if (err) throw err;
+    for (var i = 0; i < res.length; i++)
+      console.log(res.length + ' roles found.');
+    console.table('All Roles', res);
+    startTracking();
+  });
+}
+
+function addEmployee() {
+  inquirer.prompt(
+    {
+      name: 'first_name',
+      type: 'input',
+      message: 'What is the employees first name?',
+    },
+    {
+      name: 'last_name',
+      type: 'input',
+      message: 'What is the employees last name?',
+    },
+    {
+      name: 'role',
+      type: 'list',
+      message: 'What is the employees role?',
+      choices: [
+        'Sale Lead',
+        'Saleperson',
+        'Lead Engineer',
+        'Software Engineer',
+        'Account Manager',
+        'Accountant',
+        'Legal Team Lead',
+      ],
+    }
+  );
 }
