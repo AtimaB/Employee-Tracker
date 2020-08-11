@@ -28,7 +28,7 @@ function startTracking() {
       choices: [
         'View All Employee',
         'View All Employee By Department',
-        'View All Employee By Role',
+        'View All Employee By Manager',
         'Add Employee',
         'Remove Emlpoyee',
         'Update Employee Role',
@@ -46,8 +46,8 @@ function startTracking() {
           viewByDepartment();
           break;
 
-        case 'View All Employee By Role':
-          viewByRole();
+        case 'View All Employee By Manager':
+          viewByManager();
           break;
 
         case 'Add Employee':
@@ -74,7 +74,12 @@ function startTracking() {
 }
 
 function viewEmployee() {
-  let query = 'SELECT * FROM employee_trackerDB.employee';
+  let query = `
+  SELECT employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department_name AS department_name, concat(manager.first_name, " ", manager.last_name) AS manager_full_name
+  FROM employee 
+  LEFT JOIN roles ON employee.role_id = roles.id
+  LEFT JOIN department ON department.id = roles.department_id
+LEFT JOIN employee as manager ON employee.manager_id = manager.id;`;
   connection.query(query, function (err, res) {
     if (err) throw err;
     console.log(res.length + ' employee found.');
@@ -95,8 +100,11 @@ function viewByDepartment() {
   });
 }
 
-function viewByRole() {
-  let query = 'SELECT * FROM employee_trackerDB.roles';
+function viewByManager() {
+  let query = `
+  SELECT DISTINCT concat(manager.first_name, " ", manager.last_name) AS full_name
+  FROM employee
+  LEFT JOIN employee AS manager ON manager.id = employee.manager_id;`;
   connection.query(query, function (err, res) {
     if (err) throw err;
     console.log(res.length + ' roles found.');

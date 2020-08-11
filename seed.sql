@@ -30,5 +30,8 @@ SELECT * FROM roles;
 
 SELECT * FROM department;
 
-SELECT * FROM employee_trackerDB.employee
-LEFT JOIN roles ON employee.id = employee.role_id;
+SELECT employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department_name AS department_name, concat(manager.first_name, " ", manager.last_name) AS manager_full_name
+  FROM employee 
+  LEFT JOIN roles ON employee.role_id = roles.id
+  LEFT JOIN department ON department.id = roles.department_id
+  LEFT JOIN employee as manager ON employee.manager_id = manager.id;

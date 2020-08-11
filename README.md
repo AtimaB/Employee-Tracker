@@ -105,7 +105,8 @@ How do you deliver this? Here are some guidelines:
   - View the total utilized budget of a department -- ie the combined salaries of all employees in that department
 
 ## Resources
-
+- [Learn SQL In 60 Minutes](https://youtu.be/p3qvj9hO_Bo)
 - [MySQL Foreign Key](https://www.javatpoint.com/mysql-foreign-key)
 - [MySQL foreign key examples (How to define foreign keys in MySQL)](http://alvinalexander.com/mysql/mysql-foreign-key-in-mysql-innodb-constraint/)
 - [Name Generator](https://www.name-generator.org.uk/)
+- [MySQL CONCAT( ) function](https://www.w3resource.com/mysql/string-functions/mysql-concat-function.php)
