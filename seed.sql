@@ -30,5 +30,5 @@ SELECT * FROM roles;
 
 SELECT * FROM department;
 
--- SELECT * FROM employee_trackerDB.employee
--- LEFT JOIN roles ON employee.id = employee.role_id;
+SELECT * FROM employee_trackerDB.employee
+LEFT JOIN roles ON employee.id = employee.role_id;

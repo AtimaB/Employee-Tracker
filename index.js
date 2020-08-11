@@ -77,9 +77,9 @@ function viewEmployee() {
   let query = 'SELECT * FROM employee_trackerDB.employee';
   connection.query(query, function (err, res) {
     if (err) throw err;
-    for (var i = 0; i < res.length; i++)
-      console.log(res.length + ' employee found.');
-    console.table('All Employee', res);
+    console.log(res.length + ' employee found.');
+    console.log("All employee")
+    console.table(res);
     startTracking();
   });
 }
@@ -88,9 +88,9 @@ function viewByDepartment() {
   let query = 'SELECT * FROM employee_trackerDB.department';
   connection.query(query, function (err, res) {
     if (err) throw err;
-    for (var i = 0; i < res.length; i++)
-      console.log(res.length + ' department found.');
-    console.table('All Department', res);
+    console.log(res.length + ' department found.');
+    console.log("All department")
+    console.table(res);
     startTracking();
   });
 }
@@ -99,9 +99,9 @@ function viewByRole() {
   let query = 'SELECT * FROM employee_trackerDB.roles';
   connection.query(query, function (err, res) {
     if (err) throw err;
-    for (var i = 0; i < res.length; i++)
-      console.log(res.length + ' roles found.');
-    console.table('All Roles', res);
+    console.log(res.length + ' roles found.');
+    console.log("All roles")
+    console.table(res);
     startTracking();
   });
 }
