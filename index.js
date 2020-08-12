@@ -79,7 +79,7 @@ function viewEmployee() {
   FROM employee 
   LEFT JOIN roles ON employee.role_id = roles.id
   LEFT JOIN department ON department.id = roles.department_id
-LEFT JOIN employee as manager ON employee.manager_id = manager.id;`;
+  LEFT JOIN employee as manager ON employee.manager_id = manager.id;`;
   connection.query(query, function (err, res) {
     if (err) throw err;
     console.log(res.length + ' employee found.');
@@ -115,30 +115,56 @@ function viewByManager() {
 }
 
 function addEmployee() {
-  inquirer.prompt(
-    {
-      name: 'first_name',
-      type: 'input',
-      message: 'What is the employees first name?',
-    },
-    {
-      name: 'last_name',
-      type: 'input',
-      message: 'What is the employees last name?',
-    },
-    {
-      name: 'role',
-      type: 'list',
-      message: 'What is the employees role?',
-      choices: [
-        'Sale Lead',
-        'Saleperson',
-        'Lead Engineer',
-        'Software Engineer',
-        'Account Manager',
-        'Accountant',
-        'Legal Team Lead',
-      ],
-    }
-  );
+  connection.query("SELECT * FROM roles", function (err, res) {
+    if (err) throw err;
+
+    inquirer
+      .prompt([
+        {
+          name: "first_name",
+          type: "input",
+          message: "What is the Employee's first name? ",
+        },
+        {
+          name: "last_name",
+          type: "input",
+          message: "What is the Employee's last name?"
+        },
+        {
+          name: "role",
+          type: "list",
+          message: "What is this employee's role? ",
+          choices: function () {
+            var roleChoices = [];
+            for (let i = 0; i < res.length; i++) {
+              roleChoices.push(res[i].title);
+            }
+            return roleChoices;
+          },
+          
+        }
+      ]).then(function (data) {
+        let roleID;
+       
+        for (let i = 0; i < res.length; i++) {
+          if (res[i].title == data.role) {
+            roleID = res[i].id;
+            console.log(roleID)
+          }
+        }
+        connection.query("INSERT INTO employee SET ?",
+          {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            role_id: roleID,
+            manager_id: roleID
+          },
+          function (err) {
+            if (err) throw err;
+            console.log("Your Employee has been added!");
+            startTracking();
+          }
+        )
+      })
+  })
 }
