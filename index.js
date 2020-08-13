@@ -217,7 +217,7 @@ function updateEmployeeRole() {
       {
         name: "updateRole",
         type: "list",
-        message: "Whose role do you wish to update?", 
+        message: "Whose ole do you wish to update?", 
         choices: function() {
           let employeeRoleChoices = [];
           for (var i = 0; i < res.length; i++) {
@@ -225,6 +225,20 @@ function updateEmployeeRole() {
           }
           return employeeRoleChoices;
         }
+      },
+      {
+        name: "newRole",
+        type: "list",
+        message: "What is this employee's new role? ",
+        choices: function () {
+          let newRoleChoices = [];
+          for (let i = 0; i < res.length; i++) {
+            newRoleChoices.push(res[i].Role);
+          }
+          return newRoleChoices;
+        },
+
+
       }
     ])
 
