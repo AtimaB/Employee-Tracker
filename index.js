@@ -170,7 +170,7 @@ function addEmployee() {
 }
 
 function removeEmployee() {
-  connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id from employee`,
+  connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id FROM employee`,
     function (err, res) {
       if (err) throw err;
 
@@ -189,12 +189,13 @@ function removeEmployee() {
         }
       ]).then(function (data) {
         let chosenEmployee;
-        let query = "DELETE FROM employee WHERE ?"
+        // let query = "DELETE FROM employee WHERE id = ?";
         for (var i = 0; i < res.length; i++) {
-          chosenEmployee = res[i].Fullname;
+          chosenEmployee = res[i].id;
           console.log(chosenEmployee)
         } 
-        connection.query(query, {chosenEmployee}, function (err,res){
+        connection.query("DELETE FROM employee WHERE id = ?",chosenEmployee, 
+        function (err,res){
           if (err) throw err;
             console.log("Your Employee has been removed!");
             startTracking();
