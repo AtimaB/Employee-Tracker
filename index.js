@@ -115,78 +115,93 @@ function viewByManager() {
 }
 
 function addEmployee() {
-  connection.query("SELECT * FROM roles", 
-  function (err, res) {
-    if (err) throw err;
+  connection.query("SELECT * FROM roles",
+    function (err, res) {
+      if (err) throw err;
 
-    inquirer
-      .prompt([
-        {
-          name: "first_name",
-          type: "input",
-          message: "What is the Employee's first name? ",
-        },
-        {
-          name: "last_name",
-          type: "input",
-          message: "What is the Employee's last name?"
-        },
-        {
-          name: "role",
-          type: "list",
-          message: "What is this employee's role? ",
-          choices: function () {
-            let roleChoices = [];
-            for (let i = 0; i < res.length; i++) {
-              roleChoices.push(res[i].title);
-            }
-            return roleChoices;
+      inquirer
+        .prompt([
+          {
+            name: "first_name",
+            type: "input",
+            message: "What is the Employee's first name? ",
           },
-          
+          {
+            name: "last_name",
+            type: "input",
+            message: "What is the Employee's last name?"
+          },
+          {
+            name: "role",
+            type: "list",
+            message: "What is this employee's role? ",
+            choices: function () {
+              let roleChoices = [];
+              for (let i = 0; i < res.length; i++) {
+                roleChoices.push(res[i].title);
+              }
+              return roleChoices;
+            },
+
+          }
+        ]).then(function (data) {
+          let roleID;
+          for (var i = 0; i < res.length; i++) {
+            if (res[i].title == data.role) {
+              roleID = res[i].id;
+              console.log(roleID)
+            }
+          }
+          connection.query("INSERT INTO employee SET ?",
+            {
+              first_name: data.first_name,
+              last_name: data.last_name,
+              role_id: roleID,
+              manager_id: roleID
+            },
+            function (err) {
+              if (err) throw err;
+              console.log("Your Employee has been added!");
+              startTracking();
+            }
+          )
+        })
+    })
+}
+
+function removeEmployee() {
+  connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id from employee`,
+    function (err, res) {
+      if (err) throw err;
+
+      inquirer.prompt([
+        {
+          name: "remove",
+          type: "list",
+          message: "Which Employee would you like to remove?",
+          choices: function () {
+            let employeeChoices = [];
+            for (var i = 0; i < res.length; i++) {
+              employeeChoices.push("ID:"+res[i].id +"  " + res[i].Fullname);
+            }
+            return employeeChoices;
+          },
         }
       ]).then(function (data) {
-        let roleID;
+        let chosenEmployee;
+        let query = "DELETE FROM employee WHERE ?"
         for (var i = 0; i < res.length; i++) {
-          if (res[i].title == data.role) {
-            roleID = res[i].id;
-            console.log(roleID)
-          }
-        }
-        connection.query("INSERT INTO employee SET ?",
-          {
-            first_name: data.first_name,
-            last_name: data.last_name,
-            role_id: roleID,
-            manager_id: roleID
-          },
-          function (err) {
-            if (err) throw err;
-            console.log("Your Employee has been added!");
+          chosenEmployee = res[i].Fullname;
+          console.log(chosenEmployee)
+        } 
+        connection.query(query, {chosenEmployee}, function (err,res){
+          if (err) throw err;
+            console.log("Your Employee has been removed!");
             startTracking();
+        })
+            
           }
         )
       })
-  })
-}
+    }
 
-function removeEmployee () {
-  connection.query(`SELECT CONCAT(first_name, " ", last_name) AS "Fullname" FROM employee`, 
-  function (err, res){
-    if (err) throw err;
-
-    inquirer.prompt ([
-      {
-         name: "remove",
-          type: "list",
-          message: "Which Employee would you like to remove?",
-          choices: function (){
-            let employeeChoices =[];
-            for (var i = 0; i < res.length; i++) {
-              employeeChoices.push(res[i].Fullname);
-            }
-            return employeeChoices;
-          }
-      }
-    ]) .then
-  })
-}
