@@ -187,14 +187,13 @@ function removeEmployee() {
             return employeeChoices;
           },
         }
-      ]).then(function (data) {
+      ]).then(function () {
         let chosenEmployee;
-        // let query = "DELETE FROM employee WHERE id = ?";
         for (var i = 0; i < res.length; i++) {
           chosenEmployee = res[i].id;
           console.log(chosenEmployee)
         } 
-        connection.query("DELETE FROM employee WHERE id = ?",chosenEmployee, 
+        connection.query("DELETE FROM employee WHERE id = ?", chosenEmployee, 
         function (err,res){
           if (err) throw err;
             console.log("Your Employee has been removed!");
