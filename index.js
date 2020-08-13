@@ -1,6 +1,6 @@
 let mysql = require('mysql');
 let inquirer = require('inquirer');
-const { start } = require('repl');
+// const { start } = require('repl');
 
 // create the connection information for the sql database
 let connection = mysql.createConnection({
@@ -16,6 +16,7 @@ connection.connect(function (err) {
   startTracking();
 });
 
+// function which prompts the user for what action they should take
 function startTracking() {
   console.log(`............................`);
   console.log(`WELCOME TO EMPLOYEE TRACKER.`);
@@ -27,12 +28,11 @@ function startTracking() {
       message: 'What would you like to do?',
       choices: [
         'View All Employee',
-        'View All Employee By Department',
-        'View All Employee By Manager',
+        'View All Department',
+        'View All Manager',
         'Add Employee',
         'Remove Emlpoyee',
         'Update Employee Role',
-        'Update Employee Manager',
         'Exit!',
       ],
     })
@@ -42,11 +42,11 @@ function startTracking() {
           viewEmployee();
           break;
 
-        case 'View All Employee By Department':
+        case 'View All Department':
           viewByDepartment();
           break;
 
-        case 'View All Employee By Manager':
+        case 'View All Manager':
           viewByManager();
           break;
 
@@ -62,17 +62,13 @@ function startTracking() {
           updateEmployeeRole();
           break;
 
-        case 'Update Employee Manager':
-          updateEmployeeManager();
-          break;
-
         case 'Exit!':
           connection.end();
           break;
       }
     });
 }
-
+// function to handle viewing all employee 
 function viewEmployee() {
   let query = `
   SELECT employee.id, employee.first_name, employee.last_name, roles.title, roles.salary, department_name AS department_name, concat(manager.first_name, " ", manager.last_name) AS manager_full_name
@@ -88,7 +84,7 @@ function viewEmployee() {
     startTracking();
   });
 }
-
+// function to handle viewing all departments
 function viewByDepartment() {
   let query = 'SELECT * FROM employee_trackerDB.department';
   connection.query(query, function (err, res) {
@@ -99,7 +95,7 @@ function viewByDepartment() {
     startTracking();
   });
 }
-
+// function to handle viewing all managers
 function viewByManager() {
   let query = `
   SELECT DISTINCT concat(manager.first_name, " ", manager.last_name) AS full_name
@@ -113,7 +109,7 @@ function viewByManager() {
     startTracking();
   });
 }
-
+// function to handle adding new employee to sql database
 function addEmployee() {
   connection.query("SELECT * FROM roles",
     function (err, res) {
@@ -170,7 +166,7 @@ function addEmployee() {
         })
     })
 }
-
+// function to handle removing employee from sql database
 function removeEmployee() {
   connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id FROM employee`,
     function (err, res) {
@@ -206,43 +202,53 @@ function removeEmployee() {
       )
     })
 }
-
+// function to handle updating employee's role from sql database
 function updateEmployeeRole() {
   connection.query(`SELECT employee.id, CONCAT(first_name, " ", last_name) AS "Fullname", 
   roles.title AS Role FROM employee 
   LEFT JOIN roles ON employee.role_id = roles.id;`,
-  function (err, res) {
-    if (err) throw err;
-    inquirer.prompt([
-      {
-        name: "updateRole",
-        type: "list",
-        message: "Whose ole do you wish to update?", 
-        choices: function() {
-          let employeeRoleChoices = [];
-          for (var i = 0; i < res.length; i++) {
-            employeeRoleChoices.push("ID:" + res[i].id + "  " + res[i].Fullname +  "  ROLE:" + res[i].Role);
+    function (err, res) {
+      if (err) throw err;
+      inquirer.prompt([
+        {
+          name: "updateRole",
+          type: "list",
+          message: "Whose Role do you wish to update?",
+          choices: function () {
+            let employeeRoleChoices = [];
+            for (var i = 0; i < res.length; i++) {
+              employeeRoleChoices.push("ID:" + res[i].id + "  " + res[i].Fullname + "  ROLE:" + res[i].Role);
+            }
+            return employeeRoleChoices;
           }
-          return employeeRoleChoices;
-        }
-      },
-      {
-        name: "newRole",
-        type: "list",
-        message: "What is this employee's new role? ",
-        choices: function () {
-          let newRoleChoices = [];
-          for (let i = 0; i < res.length; i++) {
-            newRoleChoices.push(res[i].Role);
-          }
-          return newRoleChoices;
         },
-
-
-      }
-    ])
-
-  }
+        {
+          name: "newRole",
+          type: "list",
+          message: "What is this employee's new role? ",
+          choices: function () {
+            let newRoleChoices = [];
+            for (let i = 0; i < res.length; i++) {
+              newRoleChoices.push(res[i].Role);
+            }
+            return newRoleChoices;
+          },
+        }
+      ]) .then (function () {
+        let chosenNewRole;
+        for (var i = 0; i < res.length; i++){
+          chosenNewRole =+ res[i].id;
+        }
+        connection.query(`UPDATE roles SET ? WHERE id = ?`, chosenNewRole,
+          function (err, res) {
+            if (err) throw err;
+            console.log("");
+            console.log("----- Your Employee new role has been updated! ----");
+            console.log("");
+            startTracking();
+          }        
+        )
+      })
+    }
   )
-  
 }
