@@ -161,7 +161,9 @@ function addEmployee() {
             },
             function (err) {
               if (err) throw err;
-              console.log("Your Employee has been added!");
+              console.log("");
+              console.log("----- Your Employee has been added! ----");
+              console.log("");
               startTracking();
             }
           )
@@ -182,7 +184,7 @@ function removeEmployee() {
           choices: function () {
             let employeeChoices = [];
             for (var i = 0; i < res.length; i++) {
-              employeeChoices.push("ID:"+res[i].id +"  " + res[i].Fullname);
+              employeeChoices.push("ID:" + res[i].id + "  " + res[i].Fullname);
             }
             return employeeChoices;
           },
@@ -191,17 +193,42 @@ function removeEmployee() {
         let chosenEmployee;
         for (var i = 0; i < res.length; i++) {
           chosenEmployee = res[i].id;
-          console.log(chosenEmployee)
-        } 
-        connection.query("DELETE FROM employee WHERE id = ?", chosenEmployee, 
-        function (err,res){
-          if (err) throw err;
-            console.log("Your Employee has been removed!");
+        }
+        connection.query("DELETE FROM employee WHERE id = ?", chosenEmployee,
+          function (err, res) {
+            if (err) throw err;
+            console.log("");
+            console.log("----- Your Employee has been removed! ----");
+            console.log("");
             startTracking();
-        })
-            
-          }
-        )
-      })
-    }
+          })
+      }
+      )
+    })
+}
 
+function updateEmployeeRole() {
+  connection.query(`SELECT employee.id, CONCAT(first_name, " ", last_name) AS "Fullname", 
+  roles.title AS Role FROM employee 
+  LEFT JOIN roles ON employee.role_id = roles.id;`,
+  function (err, res) {
+    if (err) throw err;
+    inquirer.prompt([
+      {
+        name: "updateRole",
+        type: "list",
+        message: "Whose role do you wish to update?", 
+        choices: function() {
+          let employeeRoleChoices = [];
+          for (var i = 0; i < res.length; i++) {
+            employeeRoleChoices.push("ID:" + res[i].id + "  " + res[i].Fullname +  "  ROLE:" + res[i].Role);
+          }
+          return employeeRoleChoices;
+        }
+      }
+    ])
+
+  }
+  )
+  
+}
