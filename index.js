@@ -19,7 +19,9 @@ connection.connect(function (err) {
 // function which prompts the user for what action they should take
 function startTracking() {
   console.log(`............................`);
+  console.log('')
   console.log(`WELCOME TO EMPLOYEE TRACKER.`);
+  console.log('')
   console.log(`............................`);
   inquirer
     .prompt({
@@ -32,10 +34,8 @@ function startTracking() {
         'View All Manager',
         'Add Employee',
         'Add Department',
-        'Add ROle',
         'Remove Emlpoyee',
         'Remove Department',
-        'Update Employee Role',
         'Exit!',
       ],
     })
@@ -61,10 +61,6 @@ function startTracking() {
           addDepartment();
           break;
 
-        case 'Add Role':
-          addRole();
-          break;
-
         case 'Remove Emlpoyee':
           removeEmployee();
           break;
@@ -73,12 +69,13 @@ function startTracking() {
           removeDepartment();
           break;
 
-        case 'Update Employee Role':
-          updateEmployeeRole();
-          break;
-
         case 'Exit!':
           connection.end();
+          console.log(`..............................`);
+          console.log('')
+          console.log(`--- END TRACKING! GOOD BYE..---`);
+          console.log('')
+          console.log(`..............................`);
           break;
       }
     });
@@ -209,56 +206,8 @@ function addDepartment() {
     })
 }
 
-// function to handle adding new role
-// function addRole() {
-//   connection.query("SELECT * FROM department", function (err, res) {
-//     if (err) throw err;
 
-//     inquirer
-//       .prompt([
-//         {
-//           name: "role_id",
-//           type: "input",
-//           message: "Please enter the new role."
-//         },
-//         {
-//           name: "salary",
-//           type: "input",
-//           message: "What is the salary for this role?"
-//         },
-//         {
-//           name: "departmentId",
-//           type: "input",
-//           message: "Enter the department ID."
-//         }
-//       ]).then(function (data) {
-//         let deptID;
-//         for (let i = 0; i < res.length; i++) {
-//           if (res[i].name == data.departmentId) {
-//             deptID = res[i].id;
-//           }
-//         }
-
-//         connection.query(
-//           "INSERT INTO roles SET ?",
-//           {
-//             title: data.role_id,
-//             salary: data.salary,
-//             departmentId: deptID
-//           },
-//           function (err, res) {
-//             if (err) throw err;
-//             console.log("");
-//             console.table("----- Your new Role has been added! ----", res);
-//             console.log("");
-//             startTracking();
-//           }
-//         )
-//       })
-//   })
-// }
-
-// function to handle removing employee from sql database
+// // function to handle removing employee from sql database
 function removeEmployee() {
   connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id FROM employee`,
     function (err, res) {
@@ -294,7 +243,6 @@ function removeEmployee() {
       )
     })
 }
-
 
 // function to handle remove department
 function removeDepartment() {
@@ -333,63 +281,71 @@ function removeDepartment() {
     })
 }
 
+
+
+
+
+// function to handle adding new role
+// function addRole() {
+//   let department = {};
+//   connection.query("SELECT * FROM department",
+//     function (err, res) {
+//       if (err) throw err;
+
+//       inquirer
+//         .prompt([
+//           {
+//             name: "role_id",
+//             type: "input",
+//             message: "Please enter the new role."
+//           },
+//           {
+//             name: "salary",
+//             type: "input",
+//             message: "What is the salary for this role?"
+//           },
+//           {
+//             name: "department_id",
+//             type: "list",
+//             message: "please select the Department.",
+//             choices: function () {
+//               let departmentChoices = [];
+//               for (let i = 0; i < res.length; i++) {
+//                 departmentChoices.push(res[i].id + " " + res[i].department_name);
+//               }
+//               return departmentChoices;
+//             },
+//           }
+//         ]).then(function (data) {
+//           let deptID;
+//           for (var i = 0; i < res.length; i++) {
+//             if (res[i].id === data.departmentID) {
+//               deptID = res[i];
+//             }
+//           }
+//           connection.query(
+//             "INSERT INTO roles SET ?",
+//             {
+//               title: data.role_id,
+//               salary: data.salary,
+//               department_id: deptID
+//             },
+//             function (err, res) {
+//               if (err) throw err;
+//               console.log("");
+//               console.table("----- Your new Role has been added! ----", res);
+//               console.log("");
+//               startTracking();
+//             }
+//           )
+//         })
+//     })
+// }
+
+
+
+
 // function to handle updating employee's role from sql database
-function updateEmployeeRole() {
-  let employeeList = [];
-  connection.query("SELECT * FROM employee", function (err, res) {
-    for (let i = 0; i < res.length; i++) {
-      let employeeString =
-        res[i].id + " " + res[i].first_name + " " + res[i].last_name;
-      employeeList.push(employeeString);
-    }
-
-    inquirer
-      .prompt([
-        {
-          type: "list",
-          name: "updateRole",
-          message: "Which employee you wish to update?",
-          choices: employeeList
-        },
-        {
-          type: "list",
-          message: "select new role",
-          choices: ["manager", "employee"],
-          name: "newrole"
-        }
-      ])
-      .then(function (answer) {
-        console.log("updating", answer);
-        const updateID = {};
-        updateID.employeeId = parseInt(answer.updateRole.split(" ")[0]);
-        if (answer.newrole === "manager") {
-          updateID.role_id = 1;
-        } else if (answer.newrole === "employee") {
-          updateID.role_id = 2;
-        }
-        connection.query(
-          "UPDATE employee SET role_id = ? WHERE id = ?",
-          [updateID.role_id, updateID.employeeId],
-          function (err, ans) {
-            startEmployee();
-          }
-        );
-      });
-  });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 // function updateEmployeeRole() {
 //   connection.query(`SELECT * , CONCAT(first_name, " ", last_name) AS "Fullname", 
 //   roles.id , roles.title AS Role FROM employee 
