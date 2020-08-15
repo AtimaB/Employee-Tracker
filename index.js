@@ -31,7 +31,10 @@ function startTracking() {
         'View All Department',
         'View All Manager',
         'Add Employee',
+        'Add Department',
+        'Add ROle',
         'Remove Emlpoyee',
+        'Remove Department',
         'Update Employee Role',
         'Exit!',
       ],
@@ -54,8 +57,20 @@ function startTracking() {
           addEmployee();
           break;
 
+        case 'Add Department':
+          addDepartment();
+          break;
+
+        case 'Add Role':
+          addRole();
+          break;
+
         case 'Remove Emlpoyee':
           removeEmployee();
+          break;
+
+        case 'Remove Department':
+          removeDepartment();
           break;
 
         case 'Update Employee Role':
@@ -166,6 +181,83 @@ function addEmployee() {
         })
     })
 }
+
+//function to handle adding new department
+function addDepartment() {
+  inquirer
+    .prompt([
+      {
+        name: "newDept",
+        type: "input",
+        message: "What is the new department you would like to add?"
+      }
+    ]).then(function (data) {
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          department_name: data.newDept
+        }
+      );
+      var query = "SELECT * FROM department";
+      connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.log("");
+        console.table("----- Your new Department has been added! ----", res);
+        console.log("");
+        startTracking();
+      })
+    })
+}
+
+// function to handle adding new role
+// function addRole() {
+//   connection.query("SELECT * FROM department", function (err, res) {
+//     if (err) throw err;
+
+//     inquirer
+//       .prompt([
+//         {
+//           name: "role_id",
+//           type: "input",
+//           message: "Please enter the new role."
+//         },
+//         {
+//           name: "salary",
+//           type: "input",
+//           message: "What is the salary for this role?"
+//         },
+//         {
+//           name: "departmentId",
+//           type: "input",
+//           message: "Enter the department ID."
+//         }
+//       ]).then(function (data) {
+//         let deptID;
+//         for (let i = 0; i < res.length; i++) {
+//           if (res[i].name == data.departmentId) {
+//             deptID = res[i].id;
+//           }
+//         }
+
+//         connection.query(
+//           "INSERT INTO roles SET ?",
+//           {
+//             title: data.role_id,
+//             salary: data.salary,
+//             departmentId: deptID
+//           },
+//           function (err, res) {
+//             if (err) throw err;
+//             console.log("");
+//             console.table("----- Your new Role has been added! ----", res);
+//             console.log("");
+//             startTracking();
+//           }
+//         )
+//       })
+//   })
+// }
+
 // function to handle removing employee from sql database
 function removeEmployee() {
   connection.query(`SELECT  CONCAT(employee.first_name,' ',employee.last_name) as Fullname ,employee.id FROM employee`,
@@ -202,53 +294,156 @@ function removeEmployee() {
       )
     })
 }
-// function to handle updating employee's role from sql database
-function updateEmployeeRole() {
-  connection.query(`SELECT employee.id, CONCAT(first_name, " ", last_name) AS "Fullname", 
-  roles.title AS Role FROM employee 
-  LEFT JOIN roles ON employee.role_id = roles.id;`,
+
+
+// function to handle remove department
+function removeDepartment() {
+  connection.query(`SELECT * FROM department`,
     function (err, res) {
       if (err) throw err;
+
       inquirer.prompt([
         {
-          name: "updateRole",
+          name: "remove",
           type: "list",
-          message: "Whose Role do you wish to update?",
+          message: "Which Department would you like to remove?",
           choices: function () {
-            let employeeRoleChoices = [];
+            let departmentChoices = [];
             for (var i = 0; i < res.length; i++) {
-              employeeRoleChoices.push("ID:" + res[i].id + "  " + res[i].Fullname + "  ROLE:" + res[i].Role);
+              departmentChoices.push("ID:" + res[i].id + "  " + res[i].department_name);
             }
-            return employeeRoleChoices;
-          }
-        },
-        {
-          name: "newRole",
-          type: "list",
-          message: "What is this employee's new role? ",
-          choices: function () {
-            let newRoleChoices = [];
-            for (let i = 0; i < res.length; i++) {
-              newRoleChoices.push(res[i].Role);
-            }
-            return newRoleChoices;
+            return departmentChoices;
           },
         }
-      ]) .then (function () {
-        let chosenNewRole;
-        for (var i = 0; i < res.length; i++){
-          chosenNewRole =+ res[i].id;
+      ]).then(function () {
+        let chosenDepartment;
+        for (var i = 0; i < res.length; i++) {
+          chosenDepartment = res[i].id;
         }
-        connection.query(`UPDATE roles SET ? WHERE id = ?`, chosenNewRole,
+        connection.query("DELETE FROM department WHERE id = ?", chosenDepartment,
           function (err, res) {
             if (err) throw err;
             console.log("");
-            console.log("----- Your Employee new role has been updated! ----");
+            console.log("----- Your Department has been removed! ----");
             console.log("");
             startTracking();
-          }        
-        )
-      })
-    }
-  )
+          })
+      }
+      )
+    })
 }
+
+// function to handle updating employee's role from sql database
+function updateEmployeeRole() {
+  let employeeList = [];
+  connection.query("SELECT * FROM employee", function (err, res) {
+    for (let i = 0; i < res.length; i++) {
+      let employeeString =
+        res[i].id + " " + res[i].first_name + " " + res[i].last_name;
+      employeeList.push(employeeString);
+    }
+
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "updateRole",
+          message: "Which employee you wish to update?",
+          choices: employeeList
+        },
+        {
+          type: "list",
+          message: "select new role",
+          choices: ["manager", "employee"],
+          name: "newrole"
+        }
+      ])
+      .then(function (answer) {
+        console.log("updating", answer);
+        const updateID = {};
+        updateID.employeeId = parseInt(answer.updateRole.split(" ")[0]);
+        if (answer.newrole === "manager") {
+          updateID.role_id = 1;
+        } else if (answer.newrole === "employee") {
+          updateID.role_id = 2;
+        }
+        connection.query(
+          "UPDATE employee SET role_id = ? WHERE id = ?",
+          [updateID.role_id, updateID.employeeId],
+          function (err, ans) {
+            startEmployee();
+          }
+        );
+      });
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function updateEmployeeRole() {
+//   connection.query(`SELECT * , CONCAT(first_name, " ", last_name) AS "Fullname", 
+//   roles.id , roles.title AS Role FROM employee 
+//   LEFT JOIN roles ON employee.role_id = roles.id;`,
+//     function (err, res) {
+//       if (err) throw err;
+//       inquirer.prompt([
+//         {
+//           name: "updateRole",
+//           type: "list",
+//           message: "Whose Role do you wish to update?",
+//           choices: function () {
+//             let employeeRoleChoices = [];
+//             for (var i = 0; i < res.length; i++) {
+//               employeeRoleChoices.push(res[i].Fullname);
+//             }
+//             return employeeRoleChoices;
+//           }
+//         },
+//         {
+//           name: "newRole",
+//           type: "list",
+//           message: "What is this employee's new role? ",
+//           choices: function () {
+//             let newRoleChoices = [];
+//             for (let i = 0; i < res.length; i++) {
+//               newRoleChoices.push(res[i].Role);
+//             }
+//             return newRoleChoices;
+//           },
+//         }
+//       ]).then(function (data) {
+//         console.log(data)
+//         let chosenNewRole;
+//         for (var i = 0; i < res.length; i++) {
+//           chosenNewRole = + res[i].id;
+//         }
+//         connection.query(`UPDATE roles SET ? WHERE id = ?`,
+//           [{
+//             employeeRoleChoices: data.employee.id
+//           },
+//           {
+//             newRoleChoices: data.roles.id
+//           }],
+//           function (err, res) {
+//             if (err) throw err;
+//             console.log("");
+//             console.log("----- Your Employee's new role has been updated! ----");
+//             console.log("");
+//             startTracking();
+//           }
+//         )
+//       })
+//     }
+//   )
+// }
+
